@@ -1,4 +1,4 @@
-# unipay
+# UniPay
 
 ## 项目介绍
 
@@ -15,3 +15,5 @@ pip install unipay
 ```shell
 unipay
 ```
+
+![image](https://github.com/djkcyl/unipay/assets/59153990/2275fd12-fc5c-4f75-8b33-2b8fd8046be4)
