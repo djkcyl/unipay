@@ -1,20 +1,12 @@
 [project]
 name = "unipay"
-version = "0.1.0"
+version = "0.1.1"
 description = ""
-authors = [
-    {name = "djkcyl",email = "cyl@cyllive.cn"},
-]
-dependencies = [
-    "fastapi>=0.101.1",
-    "qrcode[pil]>=7.4.2",
-    "peewee>=3.16.2",
-    "uvicorn>=0.23.2",
-    "jinja2>=3.1.2",
-]
-requires-python = ">=3.10"
+authors = [{ name = "djkcyl", email = "cyl@cyllive.cn" }]
+dependencies = ["fastapi", "qrcode[pil]", "peewee", "uvicorn", "jinja2"]
+requires-python = ">=3.8"
 readme = "README.md"
-license = {text = "MIT"}
+license = { text = "MIT" }
 
 [build-system]
 requires = ["pdm-backend"]
