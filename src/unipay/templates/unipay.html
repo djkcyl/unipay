@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unipay QR Code</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            margin-top: 30px;
+        }
+
+        .qr-container {
+            background-color: #fff;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .qr-section {
+            margin: 30px;
+            /* 增大外边距 */
+            border-radius: 8px;
+            padding: 30px;
+            /* 增大内边距 */
+            color: white;
+            text-align: center;
+            /* 文字居中 */
+        }
+
+        .alipay-section {
+            background-color: rgb(22, 120, 255);
+        }
+
+        .wechatpay-section {
+            background-color: rgb(34, 171, 57);
+        }
+
+        img {
+            max-width: 200px;
+            display: block;
+            margin: 20px auto;
+            border-radius: 10px;
+            /* 添加圆角 */
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            /* 主标题居中 */
+        }
+
+        h2 {
+            color: white;
+            margin-bottom: 20px;
+            /* 增加距离QR码的间距 */
+        }
+
+        /* Media query for screens larger than 768px */
+        @media (min-width: 768px) {
+            .qr-container {
+                flex-direction: row;
+                justify-content: center;
+            }
+
+            img {
+                max-width: 300px;
+                /* Adjusting the QR code size for larger screens */
+            }
+
+            .qr-section {
+                margin: 40px;
+            }
+
+            .qr-container {
+                padding: 40px;
+                /* Adjusting container padding for larger screens */
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Unipay</h1>
+
+    <div class="qr-container">
+        <div class="qr-section alipay-section">
+            <h2>Alipay</h2>
+            <img src="{{ alipay_qr }}" alt="Alipay QR Code">
+        </div>
+
+        <div class="qr-section wechatpay-section">
+            <h2>WeChat Pay</h2>
+            <img src="{{ wechatpay_qr }}" alt="WeChat QR Code">
+        </div>
+    </div>
+
+</body>
+
+</html>
