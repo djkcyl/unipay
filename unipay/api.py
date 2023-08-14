@@ -13,7 +13,7 @@ from .db import get_unipay, add_unipay
 
 
 app = FastAPI()
-templates = Jinja2Templates(directory=Path(__file__).parent / "templates")
+templates = Jinja2Templates(directory=str(Path(__file__).parent / "templates"))
 
 
 class Unipay(BaseModel):

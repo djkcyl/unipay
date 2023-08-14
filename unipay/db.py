@@ -1,6 +1,7 @@
 import random
 import string
 
+from typing import Optional
 from datetime import datetime
 from peewee import SqliteDatabase, Model, DateTimeField, CharField, IntegerField
 
@@ -43,7 +44,7 @@ def add_unipay(alipay, wechatpay) -> UniPay:
     return UniPay.create(alipay=alipay, wechatpay=wechatpay)
 
 
-def get_unipay(short_id) -> UniPay | None:
+def get_unipay(short_id) -> Optional[UniPay]:
     unipay: UniPay | None = UniPay.get_or_none(UniPay.short_id == short_id)
     if unipay:
         unipay.scan_count += 1

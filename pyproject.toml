@@ -1,6 +1,6 @@
 [project]
 name = "unipay"
-version = "0.1.1"
+version = "0.1.5"
 description = ""
 authors = [{ name = "djkcyl", email = "cyl@cyllive.cn" }]
 dependencies = ["fastapi", "qrcode[pil]", "peewee", "uvicorn", "jinja2"]
@@ -14,3 +14,6 @@ build-backend = "pdm.backend"
 
 [project.scripts]
 unipay = "unipay.__main__:main"
+
+[tool.pdm.build]
+includes = ["unipay"]
