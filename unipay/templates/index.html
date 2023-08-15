@@ -41,18 +41,6 @@
         </div>
     </div>
 
-    <!-- Payment Selection Modal -->
-    <div id="payment-selection-modal" class="modal">
-        <div class="modal-box">
-            <h2 class="text-xl">Select Payment Method</h2>
-            <div class="space-y-4">
-                <button onclick="applyPaymentMethod('alipay')" class="btn btn-block btn-primary">Alipay</button>
-                <button onclick="applyPaymentMethod('wechat')" class="btn btn-block btn-secondary">WeChat</button>
-            </div>
-        </div>
-    </div>
-
-
     <div class="min-h-screen flex justify-center items-center">
         <div class="bg-white p-8 rounded-xl shadow-md w-96 space-y-6">
             <h1 class="text-2xl font-bold text-center">Upload Payment QR Code</h1>
@@ -91,49 +79,7 @@
     </div>
 
     <script>
-        let draggedFiles = null;
         let currentPaymentType = null;
-    
-        document.body.addEventListener('dragover', function (e) {
-            e.preventDefault();
-            document.body.classList.add('drag-over');
-        });
-
-        document.body.addEventListener('dragend', function (e) {
-            document.body.classList.remove('drag-over');
-        });
-
-        document.body.addEventListener('dragleave', function (e) {
-            if (e.relatedTarget === null || e.relatedTarget === document.documentElement) {
-                document.body.classList.remove('drag-over');
-            }
-        });
-
-        document.body.addEventListener('drop', function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-            document.body.classList.remove('drag-over');
-            if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length) {
-                draggedFiles = e.dataTransfer.files;
-                showPaymentSelectionModal();
-            }
-        });
-
-        function showPaymentSelectionModal() {
-            const modal = document.getElementById('payment-selection-modal');
-            modal.classList.add('modal-open');
-        }
-
-        function applyPaymentMethod(paymentType) {
-            const fileInput = document.getElementById(`${paymentType}-file`);
-            fileInput.files = draggedFiles;
-            decodeQR(paymentType);
-
-            // Hide the payment selection modal after selection
-            const modal = document.getElementById('payment-selection-modal');
-            modal.classList.remove('modal-open');
-        }
-
 
         async function decodeQR(paymentType) {
             const fileInput = document.getElementById(`${paymentType}-file`);
