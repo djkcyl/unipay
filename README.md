@@ -18,6 +18,7 @@
 通过 `pip` 进行安装:
 
 ```shell
+sudo apt install libzbar-dev
 pip install unipay
 ```
 
@@ -29,6 +30,7 @@ pip install unipay
 unipay
 ```
 
+- 访问 [http://127.0.0.1:8600](http://127.0.0.1:8600) 打开首页
 - 访问 [http://127.0.0.1:8600/docs](http://127.0.0.1:8600/docs) 查看 API 文档。
 - 使用 `create_unipay` 接口生成联合收款码。
 - 访问 [http://127.0.0.1:8600/xxxxxxxx](.) 查看收款码。
@@ -40,6 +42,4 @@ unipay
 ## ⚠️ 注意事项
 
 - 目前项目正在开发中，暂未提供任何配置。
-- 尚未提供设置和生成 ID 的方式。
-- 建议访问 [http://127.0.0.1:8600/docs](http://127.0.0.1:8600/docs) 查看 API 文档，并手动生成。
 - **不建议在生产环境中使用。**
