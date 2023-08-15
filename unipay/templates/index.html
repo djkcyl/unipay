@@ -33,6 +33,7 @@
     <div id="qr-selection-modal" class="modal">
         <div class="modal-box">
             <h2 class="text-xl">Select QR Code</h2>
+            <p class="text-sm text-gray-600" id="payment-type-subtitle"></p>
             <div id="qr-list" class="max-h-48 overflow-y-auto space-y-2"></div>
             <div class="modal-action">
                 <button onclick="closeQRSelectionModal(true)" class="btn">Select</button>
@@ -40,6 +41,7 @@
             </div>
         </div>
     </div>
+
 
     <div class="min-h-screen flex justify-center items-center">
         <div class="bg-white p-8 rounded-xl shadow-md w-96 space-y-6">
@@ -115,6 +117,13 @@
             currentPaymentType = paymentType;
             const qrList = document.getElementById('qr-list');
             qrList.innerHTML = '';
+
+            const subtitle = document.getElementById('payment-type-subtitle');
+            if (paymentType === 'alipay') {
+                subtitle.textContent = 'You are selecting a QR Code for Alipay.';
+            } else if (paymentType === 'wechat') {
+                subtitle.textContent = 'You are selecting a QR Code for WeChat.';
+            }
 
             qrs.forEach((qr, index) => {
                 const radioId = `qr-${index}`;
