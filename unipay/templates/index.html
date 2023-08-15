@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unipay</title>
+    <link href="assets/css/daisyui@3.5.0-full.css" rel="stylesheet" type="text/css" />
+    <script src="assets/js/tailwindcss-3.3.3.js"></script>
+    <style>
+        body.drag-over {
+            background-color: rgba(255, 255, 255, 0.6);
+            pointer-events: none;
+        }
+    </style>
+
+</head>
+
+<body class="bg-gray-100">
+
+    <!-- Error modal -->
+    <div id="error-modal" class="modal">
+        <div class="modal-box">
+            <h2 class="text-xl">Error</h2>
+            <p id="error-message"></p>
+            <div class="modal-action">
+                <button onclick="closeModal()" class="btn">Okay</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- QR Selection Modal -->
+    <div id="qr-selection-modal" class="modal">
+        <div class="modal-box">
+            <h2 class="text-xl">Select QR Code</h2>
+            <div id="qr-list" class="max-h-48 overflow-y-auto space-y-2"></div>
+            <div class="modal-action">
+                <button onclick="closeQRSelectionModal(true)" class="btn">Select</button>
+                <button onclick="closeQRSelectionModal()" class="btn">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Selection Modal -->
+    <div id="payment-selection-modal" class="modal">
+        <div class="modal-box">
+            <h2 class="text-xl">Select Payment Method</h2>
+            <div class="space-y-4">
+                <button onclick="applyPaymentMethod('alipay')" class="btn btn-block btn-primary">Alipay</button>
+                <button onclick="applyPaymentMethod('wechat')" class="btn btn-block btn-secondary">WeChat</button>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="min-h-screen flex justify-center items-center">
+        <div class="bg-white p-8 rounded-xl shadow-md w-96 space-y-6">
+            <h1 class="text-2xl font-bold text-center">Upload Payment QR Code</h1>
+
+            <div class="space-y-4">
+                <!-- Alipay upload section -->
+                <div class="relative">
+                    <button class="btn btn-primary absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer">
+                        Upload Alipay QR Code
+                    </button>
+                    <input type="file" id="alipay-file" name="alipay-file"
+                        class="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer"
+                        onchange="decodeQR('alipay')">
+                    <input type="text" id="alipay" name="alipay" readonly placeholder="Decoded Alipay QR Code..."
+                        class="input input-bordered w-full">
+                </div>
+
+                <!-- WeChat upload section -->
+                <div class="relative">
+                    <button class="btn btn-primary absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer">
+                        Upload WeChat QR Code
+                    </button>
+                    <input type="file" id="wechat-file" name="wechat-file"
+                        class="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer"
+                        onchange="decodeQR('wechat')">
+                    <input type="text" id="wechat" name="wechat" readonly placeholder="Decoded WeChat QR Code..."
+                        class="input input-bordered w-full">
+                </div>
+            </div>
+
+            <!-- Submit button -->
+            <div>
+                <button type="submit" class="btn btn-primary w-full">Create Unipay</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let draggedFiles = null;
+        let currentPaymentType = null;
+    
+        document.body.addEventListener('dragover', function (e) {
+            e.preventDefault();
+            document.body.classList.add('drag-over');
+        });
+
+        document.body.addEventListener('dragend', function (e) {
+            document.body.classList.remove('drag-over');
+        });
+
+        document.body.addEventListener('dragleave', function (e) {
+            if (e.relatedTarget === null || e.relatedTarget === document.documentElement) {
+                document.body.classList.remove('drag-over');
+            }
+        });
+
+        document.body.addEventListener('drop', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            document.body.classList.remove('drag-over');
+            if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length) {
+                draggedFiles = e.dataTransfer.files;
+                showPaymentSelectionModal();
+            }
+        });
+
+        function showPaymentSelectionModal() {
+            const modal = document.getElementById('payment-selection-modal');
+            modal.classList.add('modal-open');
+        }
+
+        function applyPaymentMethod(paymentType) {
+            const fileInput = document.getElementById(`${paymentType}-file`);
+            fileInput.files = draggedFiles;
+            decodeQR(paymentType);
+
+            // Hide the payment selection modal after selection
+            const modal = document.getElementById('payment-selection-modal');
+            modal.classList.remove('modal-open');
+        }
+
+
+        async function decodeQR(paymentType) {
+            const fileInput = document.getElementById(`${paymentType}-file`);
+            if (!fileInput.files.length) return;
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+
+            try {
+                const response = await fetch('/decode', {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                if (response.status === 400) {
+                    const data = await response.json();
+                    showErrorModal(data.detail);
+                    return;
+                }
+
+                const data = await response.json();
+                if (data.data.length === 1) {
+                    document.getElementById(paymentType).value = data.data[0];
+                } else {
+                    populateQRSelection(data.data, paymentType);
+                }
+            } catch (error) {
+                showErrorModal('Failed to decode QR code.');
+            }
+        }
+
+        function populateQRSelection(qrs, paymentType) {
+            currentPaymentType = paymentType;
+            const qrList = document.getElementById('qr-list');
+            qrList.innerHTML = '';
+
+            qrs.forEach((qr, index) => {
+                const radioId = `qr-${index}`;
+
+                const label = document.createElement('label');
+                label.setAttribute('class', 'btn btn-radio btn-block');
+
+                const input = document.createElement('input');
+                input.type = 'radio';
+                input.name = 'qr-selection';
+                input.value = qr;
+                input.id = radioId;
+
+                const span = document.createElement('span');
+                span.textContent = qr.length > 100 ? `${qr.substring(0, 100)}...` : qr;
+
+                label.appendChild(input);
+                label.appendChild(span);
+                qrList.appendChild(label);
+            });
+
+            const modal = document.getElementById('qr-selection-modal');
+            modal.classList.add('modal-open');
+        }
+
+        function closeQRSelectionModal(applySelection = false) {
+            const modal = document.getElementById('qr-selection-modal');
+            if (applySelection) {
+                const selectedQR = document.querySelector('input[name="qr-selection"]:checked');
+                if (selectedQR) {
+                    document.getElementById(currentPaymentType).value = selectedQR.value;
+                }
+            }
+            // 重置文件输入的值
+            document.getElementById(`${currentPaymentType}-file`).value = '';
+            modal.classList.remove('modal-open');
+        }
+
+
+        function showErrorModal(message) {
+            const modal = document.getElementById('error-modal');
+            const errorMessage = document.getElementById('error-message');
+            errorMessage.textContent = message;
+            modal.classList.add('modal-open');
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('error-modal');
+            modal.classList.remove('modal-open');
+        }
+    </script>
+</body>
+
+</html>

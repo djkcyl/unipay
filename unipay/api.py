@@ -1,19 +1,28 @@
 import qrcode
 import base64
 
+
 from pathlib import Path
 from starlette import status
-from fastapi import FastAPI, HTTPException, Request
+from fastapi.staticfiles import StaticFiles
+from fastapi import FastAPI, HTTPException, Request, Form, UploadFile, File
 from fastapi.responses import RedirectResponse
+from pyzbar.pyzbar import decode
+from PIL import Image
+from io import BytesIO
 from pydantic import BaseModel
 from fastapi.templating import Jinja2Templates
 
 
 from .db import get_unipay, add_unipay
 
+ALIPAY_REGEX = r"^https://qr\.alipay\.com/[A-Za-z0-9]+"
+WECHATPAY_REGEX = r"^wxp://[A-Za-z0-9\-]+"
+BASE_PATH = Path(__file__).parent
 
 app = FastAPI()
-templates = Jinja2Templates(directory=str(Path(__file__).parent / "templates"))
+app.mount("/assets", StaticFiles(directory=str(BASE_PATH / "assets")), name="assets")
+templates = Jinja2Templates(directory=str(BASE_PATH / "templates"))
 
 
 class Unipay(BaseModel):
@@ -42,11 +51,8 @@ def generate_qr(data: str) -> str:
 
 
 @app.get("/")
-async def root():
-    return {"message": "Hello World"}
-
-
-from fastapi import Request
+async def root(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
 
 
 @app.get("/{shortid}")
@@ -60,10 +66,10 @@ async def get_unipay_by_id(request: Request, shortid: str):
 
     # If Alipay client, redirect to Alipay URL
     if "alipayclient" in user_agent:
-        return RedirectResponse(url=unipay.alipay)
+        return RedirectResponse(url=str(unipay.alipay))
 
-    alipay_qr = generate_qr(unipay.alipay)
-    wechatpay_qr = generate_qr(unipay.wechatpay)
+    alipay_qr = generate_qr(str(unipay.alipay))
+    wechatpay_qr = generate_qr(str(unipay.wechatpay))
 
     # If WeChat client, show only WeChat QR code
     if "micromessenger" in user_agent:
@@ -75,9 +81,32 @@ async def get_unipay_by_id(request: Request, shortid: str):
     )
 
 
-@app.put("/create")
-async def create_unipay(unipay_req: UnipayCreate):
-    unipay = add_unipay(unipay_req.alipay, unipay_req.wechatpay)
+@app.post("/decode")
+async def decode_qr(file: UploadFile = File(...)):
+    contents = await file.read()
+
+    try:
+        image = Image.open(BytesIO(contents))
+    except Exception:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid image")
+
+    decoded = decode(image)
+    decoded_data = [d.data.decode("utf-8") for d in decoded]
+
+    if decoded_data:
+        return {"data": decoded_data}
+    else:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No QR found in the uploaded image")
+
+
+@app.post("/create")
+async def create_unipay(alipay: str = Form(..., regex=ALIPAY_REGEX), wechatpay: str = Form(..., regex=WECHATPAY_REGEX)):
+    unipay = add_unipay(alipay, wechatpay)
+    if not unipay:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Unipay already exists")
     return Unipay(
-        short_id=unipay.short_id, alipay=unipay.alipay, wechatpay=unipay.wechatpay, scan_count=unipay.scan_count
+        short_id=str(unipay.short_id),
+        alipay=str(unipay.alipay),
+        wechatpay=str(unipay.wechatpay),
+        scan_count=int(str(unipay.scan_count)),
     )
