@@ -42,41 +42,52 @@
         </div>
     </div>
 
+    <!-- Success modal -->
+    <div id="success-modal" class="modal">
+        <div class="modal-box">
+            <h2 class="text-xl">Success</h2>
+            <p id="success-message">Unipay has been successfully created!</p>
+            <div class="modal-action">
+                <button onclick="closeSuccessModal()" class="btn">Okay</button>
+            </div>
+        </div>
+    </div>
 
     <div class="min-h-screen flex justify-center items-center">
         <div class="bg-white p-8 rounded-xl shadow-md w-96 space-y-6">
             <h1 class="text-2xl font-bold text-center">Upload Payment QR Code</h1>
 
-            <div class="space-y-4">
-                <!-- Alipay upload section -->
-                <div class="relative">
-                    <button class="btn btn-primary absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer">
-                        Upload Alipay QR Code
-                    </button>
-                    <input type="file" id="alipay-file" name="alipay-file"
-                        class="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer"
-                        onchange="decodeQR('alipay')">
-                    <input type="text" id="alipay" name="alipay" readonly placeholder="Decoded Alipay QR Code..."
-                        class="input input-bordered w-full">
-                </div>
+            <form id="unipay-form" onsubmit="handleSubmit(event)">
+                <div class="space-y-4">
+                    <!-- Alipay upload section -->
+                    <div class="relative">
+                        <button class="btn btn-primary absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer">
+                            Upload Alipay QR Code
+                        </button>
+                        <input type="file" id="alipay-file" name="alipay-file"
+                            class="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer"
+                            onchange="decodeQR('alipay')">
+                        <input type="text" id="alipay" name="alipay" readonly placeholder="Decoded Alipay QR Code..."
+                            class="input input-bordered w-full">
+                    </div>
 
-                <!-- WeChat upload section -->
-                <div class="relative">
-                    <button class="btn btn-primary absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer">
-                        Upload WeChat QR Code
-                    </button>
-                    <input type="file" id="wechat-file" name="wechat-file"
-                        class="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer"
-                        onchange="decodeQR('wechat')">
-                    <input type="text" id="wechat" name="wechat" readonly placeholder="Decoded WeChat QR Code..."
-                        class="input input-bordered w-full">
+                    <!-- WeChat upload section -->
+                    <div class="relative">
+                        <button class="btn btn-primary absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer">
+                            Upload WeChat QR Code
+                        </button>
+                        <input type="file" id="wechat-file" name="wechat-file"
+                            class="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer"
+                            onchange="decodeQR('wechat')">
+                        <input type="text" id="wechat" name="wechat" readonly placeholder="Decoded WeChat QR Code..."
+                            class="input input-bordered w-full">
+                    </div>
                 </div>
-            </div>
-
-            <!-- Submit button -->
-            <div>
-                <button type="submit" class="btn btn-primary w-full">Create Unipay</button>
-            </div>
+                <!-- Submit button -->
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-primary w-full">Create Unipay</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -172,6 +183,53 @@
 
         function closeModal() {
             const modal = document.getElementById('error-modal');
+            modal.classList.remove('modal-open');
+        }
+
+        async function handleSubmit(event) {
+            event.preventDefault();
+
+            const alipayValue = document.getElementById('alipay').value;
+            const wechatValue = document.getElementById('wechat').value;
+
+            const formData = new FormData();
+            formData.append('alipay', alipayValue);
+            formData.append('wechatpay', wechatValue);
+
+            try {
+                const response = await fetch('/create', {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                if (response.status !== 200) {
+                    const data = await response.json();
+                    showErrorModal(data.detail || 'Unknown error occurred.');
+                    return;
+                }
+
+                const unipayData = await response.json();
+                showSuccessModal(unipayData.short_id);
+
+            } catch (error) {
+                showErrorModal('Failed to create Unipay.');
+            }
+        }
+
+        function showSuccessModal(message) {
+            const modal = document.getElementById('success-modal');
+            const successMessage = document.getElementById('success-message');
+
+            // 获取当前的 host 并与 short_id 拼接
+            const fullUrl = `${window.location.origin}/${message}`;
+            successMessage.innerHTML = `Unipay created successfully.<br>Access it at: <a href="${fullUrl}" target="_blank">${fullUrl}</a>`;
+
+            modal.classList.add('modal-open');
+        }
+
+
+        function closeSuccessModal() {
+            const modal = document.getElementById('success-modal');
             modal.classList.remove('modal-open');
         }
     </script>

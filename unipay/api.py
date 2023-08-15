@@ -102,8 +102,6 @@ async def decode_qr(file: UploadFile = File(...)):
 @app.post("/create")
 async def create_unipay(alipay: str = Form(..., regex=ALIPAY_REGEX), wechatpay: str = Form(..., regex=WECHATPAY_REGEX)):
     unipay = add_unipay(alipay, wechatpay)
-    if not unipay:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Unipay already exists")
     return Unipay(
         short_id=str(unipay.short_id),
         alipay=str(unipay.alipay),
