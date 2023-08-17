@@ -5,107 +5,145 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Unipay</title>
-    <link href="assets/css/daisyui@3.5.0-full.css" rel="stylesheet" type="text/css" />
+    <link href="assets/css/style.css" rel="stylesheet" type="text/css" />
     <link href="assets/css/font-awesome@5.15.1-min.css" rel="stylesheet" type="text/css" />
-    <script src="assets/js/tailwindcss-3.3.3.js"></script>
 </head>
 
 <body class="bg-gray-100">
-
-    <!-- Error modal -->
-    <div id="error-modal" class="modal">
-        <div class="modal-box">
-            <h2 class="text-xl">Error</h2>
-            <p id="error-message"></p>
-            <div class="modal-action">
-                <button onclick="closeModal()" class="btn">Okay</button>
+    <div id="app">
+        <!-- Error modal -->
+        <div id="error-modal" class="modal">
+            <div class="modal-box">
+                <h2 class="text-xl">Error</h2>
+                <p id="error-message"></p>
+                <div class="modal-action">
+                    <button onclick="closeModal()" class="btn">Okay</button>
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- QR Selection Modal -->
-    <div id="qr-selection-modal" class="modal">
-        <div class="modal-box">
-            <h2 class="text-xl">Select QR Code</h2>
-            <p class="text-sm text-gray-600" id="payment-type-subtitle"></p>
-            <div id="qr-list" class="max-h-48 overflow-y-auto space-y-2"></div>
-            <div class="modal-action">
-                <button onclick="closeQRSelectionModal(true)" class="btn">Select</button>
-                <button onclick="closeQRSelectionModal()" class="btn">Cancel</button>
+        <!-- QR Selection Modal -->
+        <div id="qr-selection-modal" class="modal">
+            <div class="modal-box">
+                <h2 class="text-xl">Select QR Code</h2>
+                <p class="text-sm text-gray-600" id="payment-type-subtitle"></p>
+                <div id="qr-list" class="max-h-48 overflow-y-auto space-y-2"></div>
+                <div class="modal-action">
+                    <button onclick="closeQRSelectionModal(true)" class="btn">Select</button>
+                    <button onclick="closeQRSelectionModal()" class="btn">Cancel</button>
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- Success modal -->
-    <div id="success-modal" class="modal">
-        <div class="modal-box">
-            <h2 class="text-xl">Success</h2>
-            <p id="success-message">Unipay has been successfully created!</p>
-            <div class="modal-action">
-                <button onclick="closeSuccessModal()" class="btn">Okay</button>
+        <!-- Success modal -->
+        <div id="success-modal" class="modal">
+            <div class="modal-box">
+                <h2 class="text-xl">Success</h2>
+                <p id="success-message">Unipay has been successfully created!</p>
+                <div class="modal-action">
+                    <button onclick="closeSuccessModal()" class="btn">Okay</button>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div class="min-h-screen flex justify-center items-center">
-        <div class="bg-white p-8 rounded-xl shadow-md space-y-6" style="width: 26rem;">
-            <h1 class="text-2xl font-bold text-center flex items-center justify-center">
-                Upload Payment QR Code
-                <a href="https://github.com/djkcyl/unipay" target="_blank" title="View on Github">
-                    <i class="fab fa-github pl-2"></i>
-                </a>
-            </h1>
+        <div class="min-h-screen flex justify-center items-center">
+            <div class="bg-white p-8 rounded-xl shadow-md space-y-6" style="width: 26rem;">
+                <h1 class="text-2xl font-bold text-center flex items-center justify-center">
+                    Upload Payment QR Code
+                    <a href="https://github.com/djkcyl/unipay" target="_blank" title="View on Github">
+                        <i class="fab fa-github pl-2"></i>
+                    </a>
+                </h1>
 
-            <form id="unipay-form" onsubmit="handleSubmit(event)">
-                <div class="space-y-4">
-                    <!-- Alipay upload section -->
-                    <div class="relative space-y-4">
-                        <div class="relative">
-                            <button
-                                class="btn btn-primary absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer">
-                                Upload Alipay QR Code
-                            </button>
-                            <input type="file" id="alipay-file" name="alipay-file"
-                                class="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer"
-                                onchange="decodeQR('alipay')">
-                            <input type="text" id="alipay" name="alipay" readonly
-                                placeholder="Decoded Alipay QR Code..." class="input input-bordered w-full">
-                        </div>
-                    </div>
-                    <!-- WeChat upload section -->
-                    <div class="relative space-y-4">
-                        <div class="relative">
-                            <button
-                                class="btn btn-primary absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer">
-                                Upload WeChat QR Code
-                            </button>
-                            <input type="file" id="wechat-file" name="wechat-file"
-                                class="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer"
-                                onchange="decodeQR('wechat')">
-                            <input type="text" id="wechat" name="wechat" readonly
-                                placeholder="Decoded WeChat QR Code..." class="input input-bordered w-full">
-                        </div>
-                    </div>
-                    <!-- ShortID input section -->
+                <form id="unipay-form" onsubmit="handleSubmit(event)">
                     <div class="space-y-4">
-                        <input type="text" id="shortid" name="shortid" placeholder="Short ID (optional)"
-                            class="input input-bordered w-full">
+                        <!-- Alipay upload section -->
+                        <div class="relative space-y-4">
+                            <div class="relative">
+                                <button
+                                    class="btn btn-primary absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer">
+                                    Upload Alipay QR Code
+                                </button>
+                                <input type="file" id="alipay-file" name="alipay-file"
+                                    class="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer"
+                                    onchange="decodeQR('alipay')">
+                                <input type="text" id="alipay" name="alipay" readonly
+                                    placeholder="Decoded Alipay QR Code..." class="input input-bordered w-full">
+                            </div>
+                        </div>
+                        <!-- WeChat upload section -->
+                        <div class="relative space-y-4">
+                            <div class="relative">
+                                <button
+                                    class="btn btn-primary absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer">
+                                    Upload WeChat QR Code
+                                </button>
+                                <input type="file" id="wechat-file" name="wechat-file"
+                                    class="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer"
+                                    onchange="decodeQR('wechat')">
+                                <input type="text" id="wechat" name="wechat" readonly
+                                    placeholder="Decoded WeChat QR Code..." class="input input-bordered w-full">
+                            </div>
+                        </div>
+                        <!-- ShortID input section -->
+                        <div class="space-y-4">
+                            <input type="text" id="shortid" name="shortid" placeholder="Short ID (optional)"
+                                class="input input-bordered w-full">
+                        </div>
                     </div>
-                </div>
-                <!-- Submit button -->
-                <div class="mt-4">
-                    <button type="submit" class="btn btn-primary w-full">Create Unipay</button>
-                </div>
-            </form>
+                    <!-- Submit button -->
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-primary w-full">Create Unipay</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
-
     <script>
         let currentPaymentType = null;
 
-        async function decodeQR(paymentType) {
-            const fileInput = document.getElementById(`${paymentType}-file`);
-            const file = fileInput.files[0];
+        function initDrag() {
+            // 获取dom元素
+            let droptarget = document.getElementById("app")
+            // 文件流数组
+            let fileBlodArr = []
+            // 文件数组
+            let fileArr = []
+            // 拖拽上传事件
+            function handleEvent(event) {
+                // 阻止事件的默认行为
+                event.preventDefault();
+                if (event.type === 'drop') {
+                    // 文件进入并松开鼠标,文件边框恢复正常
+                    // droptarget.style.borderColor = '#a89b9b'
+                    for (let file of event.dataTransfer.files) {
+                        // 把文件保存到文件数组中
+                        fileArr.push(file)
+
+                        decodeQR(null,file)
+                    }
+                } else if (event.type === 'dragleave') {
+                    // 离开时边框恢复
+                    // droptarget.style.borderColor = '#a89b9b'
+                } else {
+                    // 进入边框变为红色
+                    // droptarget.style.borderColor = 'red'
+                }
+            }
+            // 拖拽事件绑定
+            droptarget.addEventListener("dragenter", handleEvent);
+            droptarget.addEventListener("dragover", handleEvent);
+            droptarget.addEventListener("drop", handleEvent);
+            droptarget.addEventListener("dragleave", handleEvent);
+        }
+
+        initDrag();
+
+        async function decodeQR(paymentType,file = null) {
+            if(paymentType!=null){
+                const fileInput = document.getElementById(`${paymentType}-file`);
+                file = fileInput.files[0];
+            }
 
             if (!file) return;
 
@@ -122,7 +160,7 @@
             }
 
             const formData = new FormData();
-            formData.append('file', fileInput.files[0]);
+            formData.append('file', file);
 
             try {
                 const response = await fetch('/decode', {
@@ -138,6 +176,14 @@
 
                 const data = await response.json();
                 if (data.data.length === 1) {
+                    if(/^https:\/\/qr\.alipay\.com\/[A-Za-z0-9]+/.test(data.data[0])){
+                        paymentType = 'alipay';
+                    }else if(/^wxp:\/\/[A-Za-z0-9\-]+/.test(data.data[0])){
+                        paymentType = 'wechat';
+                    }else {
+                        showErrorModal('Invalid QR code (not alipay nor wechat).');
+                        return;
+                    }
                     document.getElementById(paymentType).value = data.data[0];
                 } else {
                     populateQRSelection(data.data, paymentType);
