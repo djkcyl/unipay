@@ -100,8 +100,12 @@ async def decode_qr(file: UploadFile = File(...)):
 
 
 @app.post("/create")
-async def create_unipay(alipay: str = Form(..., regex=ALIPAY_REGEX), wechatpay: str = Form(..., regex=WECHATPAY_REGEX)):
-    unipay = add_unipay(alipay, wechatpay)
+async def create_unipay(
+    alipay: str = Form(..., regex=ALIPAY_REGEX),
+    wechatpay: str = Form(..., regex=WECHATPAY_REGEX),
+    shortid: str = Form(..., min_length=2, max_length=8, regex=r"^[A-Za-z0-9]+$"),
+):
+    unipay = add_unipay(alipay, wechatpay, shortid)
     return Unipay(
         short_id=str(unipay.short_id),
         alipay=str(unipay.alipay),

@@ -6,14 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Unipay</title>
     <link href="assets/css/daisyui@3.5.0-full.css" rel="stylesheet" type="text/css" />
+    <link href="assets/css/font-awesome@5.15.1-min.css" rel="stylesheet" type="text/css" />
     <script src="assets/js/tailwindcss-3.3.3.js"></script>
-    <style>
-        body.drag-over {
-            background-color: rgba(255, 255, 255, 0.6);
-            pointer-events: none;
-        }
-    </style>
-
 </head>
 
 <body class="bg-gray-100">
@@ -54,32 +48,47 @@
     </div>
 
     <div class="min-h-screen flex justify-center items-center">
-        <div class="bg-white p-8 rounded-xl shadow-md w-96 space-y-6">
-            <h1 class="text-2xl font-bold text-center">Upload Payment QR Code</h1>
+        <div class="bg-white p-8 rounded-xl shadow-md space-y-6" style="width: 26rem;">
+            <h1 class="text-2xl font-bold text-center flex items-center justify-center">
+                Upload Payment QR Code
+                <a href="https://github.com/djkcyl/unipay" target="_blank" title="View on Github">
+                    <i class="fab fa-github pl-2"></i>
+                </a>
+            </h1>
 
             <form id="unipay-form" onsubmit="handleSubmit(event)">
                 <div class="space-y-4">
                     <!-- Alipay upload section -->
-                    <div class="relative">
-                        <button class="btn btn-primary absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer">
-                            Upload Alipay QR Code
-                        </button>
-                        <input type="file" id="alipay-file" name="alipay-file"
-                            class="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer"
-                            onchange="decodeQR('alipay')">
-                        <input type="text" id="alipay" name="alipay" readonly placeholder="Decoded Alipay QR Code..."
-                            class="input input-bordered w-full">
+                    <div class="relative space-y-4">
+                        <div class="relative">
+                            <button
+                                class="btn btn-primary absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer">
+                                Upload Alipay QR Code
+                            </button>
+                            <input type="file" id="alipay-file" name="alipay-file"
+                                class="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer"
+                                onchange="decodeQR('alipay')">
+                            <input type="text" id="alipay" name="alipay" readonly
+                                placeholder="Decoded Alipay QR Code..." class="input input-bordered w-full">
+                        </div>
                     </div>
-
                     <!-- WeChat upload section -->
-                    <div class="relative">
-                        <button class="btn btn-primary absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer">
-                            Upload WeChat QR Code
-                        </button>
-                        <input type="file" id="wechat-file" name="wechat-file"
-                            class="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer"
-                            onchange="decodeQR('wechat')">
-                        <input type="text" id="wechat" name="wechat" readonly placeholder="Decoded WeChat QR Code..."
+                    <div class="relative space-y-4">
+                        <div class="relative">
+                            <button
+                                class="btn btn-primary absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer">
+                                Upload WeChat QR Code
+                            </button>
+                            <input type="file" id="wechat-file" name="wechat-file"
+                                class="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer"
+                                onchange="decodeQR('wechat')">
+                            <input type="text" id="wechat" name="wechat" readonly
+                                placeholder="Decoded WeChat QR Code..." class="input input-bordered w-full">
+                        </div>
+                    </div>
+                    <!-- ShortID input section -->
+                    <div class="space-y-4">
+                        <input type="text" id="shortid" name="shortid" placeholder="Short ID (optional)"
                             class="input input-bordered w-full">
                     </div>
                 </div>
@@ -96,7 +105,21 @@
 
         async function decodeQR(paymentType) {
             const fileInput = document.getElementById(`${paymentType}-file`);
-            if (!fileInput.files.length) return;
+            const file = fileInput.files[0];
+
+            if (!file) return;
+
+            const maxFileSize = 10 * 1024 * 1024; // 10MB
+            if (file.size > maxFileSize) {
+                showErrorModal("File size must be under 10MB.");
+                return;
+            }
+
+            const validFileTypes = ['image/png', 'image/jpeg'];
+            if (!validFileTypes.includes(file.type)) {
+                showErrorModal("Please upload a PNG or JPG image.");
+                return;
+            }
 
             const formData = new FormData();
             formData.append('file', fileInput.files[0]);
@@ -177,6 +200,11 @@
         function showErrorModal(message) {
             const modal = document.getElementById('error-modal');
             const errorMessage = document.getElementById('error-message');
+
+            if (Array.isArray(message) && message.every(item => typeof item === 'object')) {
+                message = message.map(item => JSON.stringify(item)).join(', ');
+            }
+
             errorMessage.textContent = message;
             modal.classList.add('modal-open');
         }
@@ -191,6 +219,25 @@
 
             const alipayValue = document.getElementById('alipay').value;
             const wechatValue = document.getElementById('wechat').value;
+            const shortidValue = document.getElementById('shortid').value;
+
+            if (!alipayValue || !wechatValue) {
+                showErrorModal("Both WeChat and Alipay QR codes must be provided.");
+                return;
+            }
+
+            if (shortidValue) {
+                if (shortidValue.length < 2 || shortidValue.length > 8) {
+                    showErrorModal("Short ID must be between 2 and 8 characters.");
+                    return;
+                }
+
+                const regex = /^[A-Za-z0-9]+$/;
+                if (!regex.test(shortidValue)) {
+                    showErrorModal("Short ID can only contain alphanumeric characters.");
+                    return;
+                }
+            }
 
             const formData = new FormData();
             formData.append('alipay', alipayValue);
