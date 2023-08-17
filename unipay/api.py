@@ -5,7 +5,7 @@ import base64
 from pathlib import Path
 from starlette import status
 from fastapi.staticfiles import StaticFiles
-from fastapi import FastAPI, HTTPException, Request, Form, UploadFile, File
+from fastapi import FastAPI, HTTPException, Request, Form, UploadFile, Depends
 from fastapi.responses import RedirectResponse
 from pyzbar.pyzbar import decode
 from PIL import Image
@@ -19,6 +19,7 @@ from .db import get_unipay, add_unipay
 ALIPAY_REGEX = r"^https://qr\.alipay\.com/[A-Za-z0-9]+"
 WECHATPAY_REGEX = r"^wxp://[A-Za-z0-9\-]+"
 BASE_PATH = Path(__file__).parent
+MAX_SIZE = 10 * 1024 * 1024
 
 app = FastAPI()
 app.mount("/assets", StaticFiles(directory=str(BASE_PATH / "assets")), name="assets")
@@ -35,6 +36,21 @@ class Unipay(BaseModel):
 class UnipayCreate(BaseModel):
     alipay: str
     wechatpay: str
+
+
+async def verify_upload_file_size(file: UploadFile) -> UploadFile:
+    size = 0
+    while True:
+        chunk = await file.read(10 * 1024)  # Read 8KB chunks
+        if not chunk:
+            break
+        size += len(chunk)
+        if size > MAX_SIZE:
+            raise HTTPException(status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, detail="File is too large")
+
+    file.file.seek(0)
+
+    return file
 
 
 def generate_qr(data: str) -> str:
@@ -82,7 +98,7 @@ async def get_unipay_by_id(request: Request, shortid: str):
 
 
 @app.post("/decode")
-async def decode_qr(file: UploadFile = File(...)):
+async def decode_qr(file: UploadFile = Depends(verify_upload_file_size)):
     contents = await file.read()
 
     try:
