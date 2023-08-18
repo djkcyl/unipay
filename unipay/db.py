@@ -40,7 +40,7 @@ def check_short_id(short_id):
     return UniPay.get_or_none(UniPay.short_id == short_id)
 
 
-def add_unipay(alipay: str, wechatpay: str, shortid: str) -> UniPay:
+def add_unipay(alipay: str, wechatpay: str, shortid: Optional[str]) -> UniPay:
     if not (unipay := UniPay.get_or_none(UniPay.alipay == alipay, UniPay.wechatpay == wechatpay)):
         return UniPay.create(alipay=alipay, wechatpay=wechatpay, short_id=shortid)
     return unipay

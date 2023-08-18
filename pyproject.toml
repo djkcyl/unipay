@@ -11,8 +11,10 @@ dependencies = [
     "jinja2",
     "python-multipart>=0.0.6",
     "click>=8.1.6",
-    "pyzbar>=0.1.9",
     "aiofiles>=23.2.1",
+    "skia-python>=87.5",
+    "pyzxing>=1.0.2",
+    "opencv-python>=4.8.0.76",
 ]
 requires-python = ">=3.8"
 readme = "README.md"
@@ -27,3 +29,8 @@ unipay = "unipay.__main__:main"
 
 [tool.pdm.build]
 includes = ["unipay"]
+
+[tool.pdm.dev-dependencies]
+dev = [
+    "mypy>=1.5.1",
+]

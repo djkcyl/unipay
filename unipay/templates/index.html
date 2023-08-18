@@ -39,12 +39,16 @@
         <div id="success-modal" class="modal">
             <div class="modal-box">
                 <h2 class="text-xl">Success</h2>
-                <p id="success-message">Unipay has been successfully created!</p>
+                <p>Unipay created successfully.</p>
+                <p>Access it at: <a id="success-url" href="#" target="_blank"></a></p>
+                <div id="qrcode"></div>
+                <a id="downloadQR" download="unipay-qrcode.png" href="#" class="btn">Download QR Code</a>
                 <div class="modal-action">
                     <button onclick="closeSuccessModal()" class="btn">Okay</button>
                 </div>
             </div>
         </div>
+
 
         <div class="min-h-screen flex justify-center items-center">
             <div class="bg-white p-8 rounded-xl shadow-md space-y-6" style="width: 26rem;">
@@ -120,7 +124,7 @@
                         // 把文件保存到文件数组中
                         fileArr.push(file)
 
-                        decodeQR(null,file)
+                        decodeQR(null, file)
                     }
                 } else if (event.type === 'dragleave') {
                     // 离开时边框恢复
@@ -139,8 +143,8 @@
 
         initDrag();
 
-        async function decodeQR(paymentType,file = null) {
-            if(paymentType!=null){
+        async function decodeQR(paymentType, file = null) {
+            if (paymentType != null) {
                 const fileInput = document.getElementById(`${paymentType}-file`);
                 file = fileInput.files[0];
             }
@@ -176,11 +180,11 @@
 
                 const data = await response.json();
                 if (data.data.length === 1) {
-                    if(/^https:\/\/qr\.alipay\.com\/[A-Za-z0-9]+/.test(data.data[0])){
+                    if (/^https:\/\/qr\.alipay\.com\/[A-Za-z0-9]+/.test(data.data[0])) {
                         paymentType = 'alipay';
-                    }else if(/^wxp:\/\/[A-Za-z0-9\-]+/.test(data.data[0])){
+                    } else if (/^wxp:\/\/[A-Za-z0-9\-]+/.test(data.data[0])) {
                         paymentType = 'wechat';
-                    }else {
+                    } else {
                         showErrorModal('Invalid QR code (not alipay nor wechat).');
                         return;
                     }
@@ -302,23 +306,26 @@
                 }
 
                 const unipayData = await response.json();
-                showSuccessModal(unipayData.short_id);
+                showSuccessModal(unipayData);
 
             } catch (error) {
                 showErrorModal('Failed to create Unipay.');
             }
         }
 
-        function showSuccessModal(message) {
+        function showSuccessModal(data) {
             const modal = document.getElementById('success-modal');
-            const successMessage = document.getElementById('success-message');
+            const successUrlElement = document.getElementById('success-url');
 
-            // 获取当前的 host 并与 short_id 拼接
-            const fullUrl = `${window.location.origin}/${message}`;
-            successMessage.innerHTML = `Unipay created successfully.<br>Access it at: <a href="${fullUrl}" target="_blank">${fullUrl}</a>`;
+            console.log(data);
+            // Construct the full URL.
+            const fullUrl = `${window.location.origin}/${data.short_id}`;
+            successUrlElement.href = fullUrl;
+            successUrlElement.textContent = fullUrl;
 
             modal.classList.add('modal-open');
         }
+
 
 
         function closeSuccessModal() {

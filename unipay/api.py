@@ -1,13 +1,14 @@
 import qrcode
 import base64
+import numpy as np
 
-
+from typing import Optional
 from pathlib import Path
 from starlette import status
+from pyzxing import BarCodeReader
 from fastapi.staticfiles import StaticFiles
-from fastapi import FastAPI, HTTPException, Request, Form, UploadFile, Depends
+from fastapi import FastAPI, HTTPException, Request, Form, UploadFile
 from fastapi.responses import RedirectResponse
-from pyzbar.pyzbar import decode
 from PIL import Image
 from io import BytesIO
 from pydantic import BaseModel
@@ -22,6 +23,7 @@ BASE_PATH = Path(__file__).parent
 MAX_SIZE = 10 * 1024 * 1024
 
 app = FastAPI()
+qr_reader = BarCodeReader()
 app.mount("/assets", StaticFiles(directory=str(BASE_PATH / "assets")), name="assets")
 templates = Jinja2Templates(directory=str(BASE_PATH / "templates"))
 
@@ -36,21 +38,6 @@ class Unipay(BaseModel):
 class UnipayCreate(BaseModel):
     alipay: str
     wechatpay: str
-
-
-async def verify_upload_file_size(file: UploadFile) -> UploadFile:
-    size = 0
-    while True:
-        chunk = await file.read(10 * 1024)  # Read 8KB chunks
-        if not chunk:
-            break
-        size += len(chunk)
-        if size > MAX_SIZE:
-            raise HTTPException(status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, detail="File is too large")
-
-    file.file.seek(0)
-
-    return file
 
 
 def generate_qr(data: str) -> str:
@@ -98,16 +85,17 @@ async def get_unipay_by_id(request: Request, shortid: str):
 
 
 @app.post("/decode")
-async def decode_qr(file: UploadFile = Depends(verify_upload_file_size)):
+async def decode_qr(file: UploadFile):
     contents = await file.read()
 
     try:
         image = Image.open(BytesIO(contents))
+        image_array = np.array(image)
+        decoded = qr_reader.decode_array(image_array)
     except Exception:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid image")
 
-    decoded = decode(image)
-    decoded_data = [d.data.decode("utf-8") for d in decoded]
+    decoded_data = [d["parsed"].decode("utf-8") for d in decoded if d]
 
     if decoded_data:
         return {"data": decoded_data}
@@ -119,7 +107,7 @@ async def decode_qr(file: UploadFile = Depends(verify_upload_file_size)):
 async def create_unipay(
     alipay: str = Form(..., regex=ALIPAY_REGEX),
     wechatpay: str = Form(..., regex=WECHATPAY_REGEX),
-    shortid: str = Form(..., min_length=2, max_length=8, regex=r"^[A-Za-z0-9]+$"),
+    shortid: Optional[str] = Form(None, min_length=2, max_length=8, regex=r"^[A-Za-z0-9]+$"),
 ):
     unipay = add_unipay(alipay, wechatpay, shortid)
     return Unipay(
